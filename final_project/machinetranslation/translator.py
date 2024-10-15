@@ -1,27 +1,25 @@
 import os
-import json
-import six
+from google.cloud import translate_v3 as translate  # Use the correct import for the translation module
 from dotenv import load_dotenv
-from google.cloud import translate
 
-#Api key and url
+# Load environment variables from .env file
+load_dotenv()
 
+# Set the project ID
+PROJECT_ID = os.getenv("GOOGLE_CLOUD_PROJECT_ID")  # Ensure you set this in your .env
 
-#Translates english to french
-# Initialize Translation client
-def english_to_french(english_text="Hello", project_id="ferrous-amphora-352613"):
-
+# Translates English to French
+def english_to_french(english_text: str, project_id: str = PROJECT_ID) -> str:
+    """Translate English text to French."""
+    
     client = translate.TranslationServiceClient()
 
     location = "global"
-
-    parent = f"projects/{'ferrous-amphora-352613'}/locations/{'My First Project'}"
+    parent = f"projects/{project_id}/locations/{location}"
 
     # Translate text from English to French
     response = client.translate_text(
         request={
-            "project_id": project_id,
-            "location": location,
             "parent": parent,
             "contents": [english_text],
             "mime_type": "text/plain",  
@@ -30,29 +28,24 @@ def english_to_french(english_text="Hello", project_id="ferrous-amphora-352613")
         }
     )
 
-    # Display the translation for each input text provided
-    for translation in response.translations:
-        print("Translated text: {}".format(translation.translated_text))
-        print('\n')
+    # Collect translations
+    translations = [translation.translated_text for translation in response.translations]
+    
+    # Return the first translation (assuming only one input text)
+    return translations[0] if translations else ""
 
-
-
-# Translates french to english
-# Initialize Translation client
-def french_to_english(french_text="Bonjour", project_id="ferrous-amphora-352613"):
-    """Translating Text."""
-
+# Translates French to English
+def french_to_english(french_text: str, project_id: str = PROJECT_ID) -> str:
+    """Translate French text to English."""
+    
     client = translate.TranslationServiceClient()
 
     location = "global"
+    parent = f"projects/{project_id}/locations/{location}"
 
-    parent = f"projects/{'ferrous-amphora-352613'}/locations/{'MyFirstProject'}"
-
-    # Translate text from English to French
+    # Translate text from French to English
     response = client.translate_text(
         request={
-            "project_id": project_id,
-            "location": location,
             "parent": parent,
             "contents": [french_text],
             "mime_type": "text/plain",  
@@ -61,7 +54,18 @@ def french_to_english(french_text="Bonjour", project_id="ferrous-amphora-352613"
         }
     )
 
-    # Display the translation for each input text provided
-    for translation in response.translations:
-        print("Translated text: {}".format(translation.translated_text))
+    # Collect translations
+    translations = [translation.translated_text for translation in response.translations]
+    
+    # Return the first translation (assuming only one input text)
+    return translations[0] if translations else ""
 
+# Example usage
+if __name__ == "__main__":
+    english_text = "Hello"
+    french_translation = english_to_french(english_text)
+    print(f"Translated '{english_text}' to French: '{french_translation}'")
+    
+    french_text = "Bonjour"
+    english_translation = french_to_english(french_text)
+    print(f"Translated '{french_text}' to English: '{english_translation}'")
